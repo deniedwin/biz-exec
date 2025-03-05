@@ -89,10 +89,29 @@ function calculateOutputs() {
   document.getElementById("worstPayback").innerText = !isNaN(worstPayback) ? worstPayback.toFixed(2) + " years" : "N/A";
 }
 
+function updateSliderDisplay(id, displayId) {
+  const slider = document.getElementById(id);
+  const display = document.getElementById(displayId);
+  display.innerText = slider.value;
+}
+
 document.addEventListener("DOMContentLoaded", function() {
   // Attach event listeners to tuner inputs
   const tuners = document.querySelectorAll(".tuner");
-  tuners.forEach(input => input.addEventListener("input", calculateOutputs));
+  tuners.forEach(input => input.addEventListener("input", () => {
+    // Update slider display if applicable
+    if (input.id === "servicePrice") updateSliderDisplay("servicePrice", "servicePriceVal");
+    if (input.id === "souvenirPrice") updateSliderDisplay("souvenirPrice", "souvenirPriceVal");
+    if (input.id === "occupancyRate") updateSliderDisplay("occupancyRate", "occupancyRateVal");
+    
+    // Recalculate outputs on any input change
+    calculateOutputs();
+  }));
+  
+  // Initial display update for sliders
+  updateSliderDisplay("servicePrice", "servicePriceVal");
+  updateSliderDisplay("souvenirPrice", "souvenirPriceVal");
+  updateSliderDisplay("occupancyRate", "occupancyRateVal");
   
   // Perform an initial calculation on page load
   calculateOutputs();
