@@ -11,30 +11,38 @@
     <h1>ROCK CLIMBING BUSINESS MODEL SIMULATOR</h1>
   </header>
 
-  <!-- Top Section: Input Tuners -->
+  <!-- Top Section: Input Sliders -->
   <section id="inputs">
     <h2>INPUT VARIABLES</h2>
+
     <div class="input-group">
-      <label for="servicePrice">
-        Base Price Service/Product (USD): <span id="servicePriceVal">100</span>
+      <label for="estimatedPassengers">
+        Estimated Passengers: <span id="passengerVal">144</span>
       </label>
-      <input type="range" id="servicePrice" class="tuner" value="100" min="50" max="200" step="1">
+      <input type="range" id="estimatedPassengers" class="tuner" 
+             value="144" min="0" max="500" step="1">
     </div>
+
+    <div class="input-group">
+      <label for="weightedAvgPrice">
+        Weighted Avg Tour Price (USD): <span id="weightedPriceVal">161.68</span>
+      </label>
+      <input type="range" id="weightedAvgPrice" class="tuner" 
+             value="161.68" min="50" max="300" step="0.01">
+    </div>
+
     <div class="input-group">
       <label for="souvenirPrice">
-        Base Price Souvenir (USD): <span id="souvenirPriceVal">10</span>
+        Souvenir Price (USD): <span id="souvenirVal">17.50</span>
       </label>
-      <input type="range" id="souvenirPrice" class="tuner" value="10" min="5" max="50" step="1">
+      <input type="range" id="souvenirPrice" class="tuner" 
+             value="17.50" min="5" max="50" step="0.50">
     </div>
-    <div class="input-group">
-      <label for="occupancyRate">
-        Average Occupancy Rate (%): <span id="occupancyRateVal">50</span>
-      </label>
-      <input type="range" id="occupancyRate" class="tuner" value="50" min="0" max="100" step="1">
-    </div>
+
     <div class="input-group">
       <label for="totalInvestment">Total Investment (ANG):</label>
-      <input type="number" id="totalInvestment" class="tuner" value="66124.90" step="0.01">
+      <input type="number" id="totalInvestment" class="tuner" 
+             value="66124.90" step="0.01">
     </div>
   </section>
 
