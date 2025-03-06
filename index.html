@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rock Climbing Business Model</title>
+  <title>Rock Climbing Business Model (ANG)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,128 +11,74 @@
     <h1>ROCK CLIMBING BUSINESS MODEL</h1>
   </header>
 
-  <!-- TOP SECTION: Two-column layout for global inputs and loan inputs -->
+  <!-- TOP SECTION: Two-column layout for Global & Loan Inputs -->
   <section id="top-section">
     <div class="column" id="global-inputs">
       <h2>GLOBAL INPUTS</h2>
-
-      <!-- Average Occupancy Rate (b) -->
+      <!-- Occupancy Rate (b) -->
       <div class="input-group">
         <label for="occupancyRate">
           Average Occupancy Rate (%):
           <span id="occupancyRateVal">50</span>
         </label>
-        <input
-          type="range"
-          id="occupancyRate"
-          class="tuner"
-          value="50"
-          min="0"
-          max="100"
-          step="1"
-        />
+        <input type="range" id="occupancyRate" class="tuner" value="50" min="0" max="100" step="1" />
       </div>
-
-      <!-- Average Tour Fee (e) -->
+      <!-- Average Tour Fee (e) in ANG -->
       <div class="input-group">
         <label for="tourFee">
-          Average Tour Fee (USD):
-          <span id="tourFeeVal">92.50</span>
+          Average Tour Fee (ANG):
+          <span id="tourFeeVal">161.88</span>
         </label>
-        <input
-          type="range"
-          id="tourFee"
-          class="tuner"
-          value="92.50"
-          min="0"
-          max="200"
-          step="0.50"
-        />
+        <input type="range" id="tourFee" class="tuner" value="161.88" min="0" max="400" step="0.1" />
       </div>
-
-      <!-- Souvenir Fee (f) -->
+      <!-- Souvenir Fee (f) in ANG -->
       <div class="input-group">
         <label for="souvenirFee">
-          Souvenir Fee (USD):
-          <span id="souvenirFeeVal">10</span>
+          Souvenir Fee (ANG):
+          <span id="souvenirFeeVal">17.50</span>
         </label>
-        <input
-          type="range"
-          id="souvenirFee"
-          class="tuner"
-          value="10"
-          min="0"
-          max="50"
-          step="1"
-        />
+        <input type="range" id="souvenirFee" class="tuner" value="17.50" min="0" max="100" step="0.1" />
       </div>
     </div>
 
     <div class="column" id="loan-inputs">
       <h2>LOAN INPUTS</h2>
-
-      <!-- Interest Rate (k) -->
+      <!-- Interest Rate (k) in % -->
       <div class="input-group">
         <label for="interestRate">
           Interest Rate (%):
           <span id="interestRateVal">18</span>
         </label>
-        <input
-          type="range"
-          id="interestRate"
-          class="tuner"
-          value="18"
-          min="0"
-          max="30"
-          step="0.5"
-        />
+        <input type="range" id="interestRate" class="tuner" value="18" min="0" max="30" step="0.5" />
       </div>
-
-      <!-- Installments Per Year (m) -->
+      <!-- Installments per Year (m) -->
       <div class="input-group">
         <label for="installmentsPerYear">
           Installments per Year:
           <span id="installmentsVal">12</span>
         </label>
-        <input
-          type="range"
-          id="installmentsPerYear"
-          class="tuner"
-          value="12"
-          min="1"
-          max="24"
-          step="1"
-        />
+        <input type="range" id="installmentsPerYear" class="tuner" value="12" min="1" max="24" step="1" />
       </div>
-
       <!-- Number of Years (n) -->
       <div class="input-group">
         <label for="loanYears">
           Number of Years:
           <span id="loanYearsVal">3</span>
         </label>
-        <input
-          type="range"
-          id="loanYears"
-          class="tuner"
-          value="3"
-          min="1"
-          max="10"
-          step="1"
-        />
+        <input type="range" id="loanYears" class="tuner" value="3" min="1" max="10" step="1" />
       </div>
     </div>
   </section>
 
   <!-- MID SECTION: Outputs -->
   <section id="mid-section">
-    <h2>OUTPUTS</h2>
+    <h2>OUTPUTS (in ANG)</h2>
     <table>
       <tr>
-        <th>Total Revenue (d) <br />USD/month</th>
-        <th>Net Profit (t) <br />USD/month</th>
-        <th>ROI (u) <br />(%)</th>
-        <th>Payback Period (w) <br />(years)</th>
+        <th>Total Revenue (d)<br />(ANG/month)</th>
+        <th>Net Profit (t)<br />(ANG/month)</th>
+        <th>ROI (u)<br />(%)</th>
+        <th>Payback Period (w)<br />(years)</th>
       </tr>
       <tr>
         <td id="totalRevenueOutput"></td>
@@ -149,8 +95,8 @@
     <table>
       <tr>
         <th>Scenario</th>
-        <th>Total Revenue (USD/month)</th>
-        <th>Net Profit (USD/month)</th>
+        <th>Total Revenue (ANG/month)</th>
+        <th>Net Profit (ANG/month)</th>
         <th>ROI (%)</th>
         <th>Payback (years)</th>
       </tr>
