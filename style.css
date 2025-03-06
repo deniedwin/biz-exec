@@ -30,12 +30,12 @@ h1, h2 {
 #top-section {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: center;
 }
 
-/* Two columns in top section */
+/* Single column in top section */
 .column {
-  width: 48%;
+  width: 100%;
   border: 2px solid #000;
   padding: 10px;
 }
@@ -91,16 +91,16 @@ th, td {
   body {
     padding: 10px;
   }
-
+  
   #top-section {
     flex-direction: column;
   }
-
+  
   .column {
     width: 100%;
     margin-bottom: 10px;
   }
-
+  
   th, td {
     padding: 5px;
   }

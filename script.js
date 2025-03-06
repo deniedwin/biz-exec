@@ -3,57 +3,25 @@
  *****************************************************************************/
 const a = 288;  // Maximum passengers per month
 
-// Conversion factor: 1 USD = 1.75 ANG
-// Global Inputs (expressed in ANG): 
-// Default tour fee in ANG: 92.50 USD * 1.75 = 161.88 ANG
-// Default souvenir fee in ANG: 10 USD * 1.75 = 17.50 ANG
-
-/******************************************************************************
- * HELPER: PMT Calculation (Google Sheets style)
- * PMT(rate, nper, pv)
- *****************************************************************************/
-function computePMT(ratePerInstallment, totalInstallments, presentValue) {
-  if (ratePerInstallment === 0) {
-    return presentValue / totalInstallments;
-  }
-  return presentValue * (ratePerInstallment * Math.pow(1 + ratePerInstallment, totalInstallments)) /
-         (Math.pow(1 + ratePerInstallment, totalInstallments) - 1);
-}
-
 /******************************************************************************
  * MAIN CALCULATION FUNCTION
  *****************************************************************************/
 function calculateOutputs() {
-  // Retrieve input values:
-  // Global inputs
-  const b = parseFloat(document.getElementById("occupancyRate").value) / 100; // Occupancy rate (as decimal)
-  const e = parseFloat(document.getElementById("tourFee").value);            // Average tour fee (ANG)
+  // Retrieve Global input values:
+  const b = parseFloat(document.getElementById("occupancyRate").value) / 100; // Occupancy rate as a decimal
+  const e = parseFloat(document.getElementById("tourFee").value);            // Climbing fee (ANG)
   const f = parseFloat(document.getElementById("souvenirFee").value);          // Souvenir fee (ANG)
 
-  // Loan inputs
-  const k = parseFloat(document.getElementById("interestRate").value) / 100;   // Annual interest rate (decimal)
-  const m = parseFloat(document.getElementById("installmentsPerYear").value);  // Installments per year
-  const n = parseFloat(document.getElementById("loanYears").value);            // Number of years
+  // Derived values:
+  const c = a * b;                      // Estimated passengers per month
+  const d = c * (e + f);                // Total revenue (ANG/month)
+  const s = 64540.90 + (c * 5.5);         // Total investment (ANG)
 
-  // Derived Values:
-  // Estimated passengers per month: c = a * b
-  const c = a * b;
-  // Total investment: s = 64540.90 + (c * 11/2) = 64540.90 + (c * 5.5)
-  const s = 64540.90 + (c * 5.5);
-  // Total revenue (monthly) in ANG: d = c * (e + f)
-  const d = c * (e + f);
-  
-  // Monthly loan installment: j = PMT((k/m), m*n, -s)
-  const ratePerInstallment = k / m;
-  const totalInstallments = m * n;
-  const j = computePMT(ratePerInstallment, totalInstallments, s);
+  // Monthly loan installment is removed (set to 0)
+  // Total expenses (q) = 10746.25 + (600 + (c * 5.5)) + 0 + (0.0758 * d)
+  const q = 10746.25 + (600 + (c * 5.5)) + (0.0758 * d);
 
-  // Total expenses (operational cost) in ANG:
-  // q = 10746.25 + (600 + (c * 11/2)) + j + (0.0758 * d)
-  const variablePart = 600 + (c * 5.5);
-  const q = 10746.25 + variablePart + j + (0.0758 * d);
-
-  // Net profit (monthly) in ANG: t = d - q
+  // Net profit (ANG/month)
   const t = d - q;
 
   // ROI (%) = (t / s) * 100
@@ -73,7 +41,7 @@ function calculateOutputs() {
   const baseROI = u;
   let baseW = w;
 
-  // Best-case scenario:
+  // Best-case:
   const bestD = d * 1.2;
   const bestQ = q * 0.9;
   const bestT = bestD - bestQ;
@@ -81,7 +49,7 @@ function calculateOutputs() {
   let bestW = bestT > 0 ? s / bestT : Infinity;
   if (bestW > 1000) bestW = Infinity;
 
-  // Worst-case scenario:
+  // Worst-case:
   const worstD = d * 0.8;
   const worstQ = q * 1.1;
   const worstT = worstD - worstQ;
@@ -89,7 +57,7 @@ function calculateOutputs() {
   let worstW = worstT > 0 ? s / worstT : Infinity;
   if (worstW > 1000) worstW = Infinity;
 
-  // Calculate scenario percentage differences (relative to base-case d)
+  // Scenario percentage differences:
   const bestPercent = ((bestD - d) / d) * 100;    // should be +20%
   const worstPercent = ((worstD - d) / d) * 100;    // should be -20%
 
@@ -103,22 +71,18 @@ function calculateOutputs() {
   document.getElementById("paybackOutput").innerText = (w === Infinity) ? "∞" : w.toFixed(2);
 
   // BOTTOM SECTION: Alternative Scenarios
-  // Update scenario labels with computed percentages:
   document.getElementById("baseScenario").innerText = "Base-case (0%)";
   document.getElementById("bestScenario").innerText = "Best-case (" + (bestPercent > 0 ? "+" : "") + bestPercent.toFixed(0) + "%)";
   document.getElementById("worstScenario").innerText = "Worst-case (" + (worstPercent > 0 ? "+" : "") + worstPercent.toFixed(0) + "%)";
 
-  // Base-case row
   document.getElementById("baseRevenue").innerText = baseD.toFixed(2);
   document.getElementById("baseROI").innerText = baseROI.toFixed(2) + "%";
   document.getElementById("basePayback").innerText = (baseW === Infinity) ? "∞" : baseW.toFixed(2);
 
-  // Best-case row
   document.getElementById("bestRevenue").innerText = bestD.toFixed(2);
   document.getElementById("bestROI").innerText = bestROI.toFixed(2) + "%";
   document.getElementById("bestPayback").innerText = (bestW === Infinity) ? "∞" : bestW.toFixed(2);
 
-  // Worst-case row
   document.getElementById("worstRevenue").innerText = worstD.toFixed(2);
   document.getElementById("worstROI").innerText = worstROI.toFixed(2) + "%";
   document.getElementById("worstPayback").innerText = (worstW === Infinity) ? "∞" : worstW.toFixed(2);
@@ -139,7 +103,6 @@ function updateSliderDisplay(sliderId, displayId, isInteger = false) {
  *****************************************************************************/
 document.addEventListener("DOMContentLoaded", () => {
   const tuners = document.querySelectorAll(".tuner");
-
   tuners.forEach(input => {
     input.addEventListener("input", () => {
       switch (input.id) {
@@ -152,30 +115,16 @@ document.addEventListener("DOMContentLoaded", () => {
         case "souvenirFee":
           updateSliderDisplay("souvenirFee", "souvenirFeeVal");
           break;
-        case "interestRate":
-          updateSliderDisplay("interestRate", "interestRateVal");
-          break;
-        case "installmentsPerYear":
-          updateSliderDisplay("installmentsPerYear", "installmentsVal", true);
-          break;
-        case "loanYears":
-          updateSliderDisplay("loanYears", "loanYearsVal", true);
-          break;
         default:
           break;
       }
       calculateOutputs();
     });
   });
-
-  // Initialize slider displays
+  
   updateSliderDisplay("occupancyRate", "occupancyRateVal", true);
   updateSliderDisplay("tourFee", "tourFeeVal");
   updateSliderDisplay("souvenirFee", "souvenirFeeVal");
-  updateSliderDisplay("interestRate", "interestRateVal");
-  updateSliderDisplay("installmentsPerYear", "installmentsVal", true);
-  updateSliderDisplay("loanYears", "loanYearsVal", true);
-
-  // Perform initial calculation
+  
   calculateOutputs();
 });
