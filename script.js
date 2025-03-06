@@ -1,154 +1,184 @@
 /******************************************************************************
- * Assumptions & Key Ratios
+ * CONSTANTS & DEFAULTS (Given in the prompt)
  *****************************************************************************/
-const operatingCostRatio = 0.40;      // 40% of revenue as operating costs
-const loanInterestRate = 18;         // Annual interest rate (%)
-const loanTerms = 3;                 // Loan duration (years)
-const installmentsPerYear = 12;      // Number of installments per year
+const a = 288;               // Max passengers per month
+// b, e, f, k, m, n are user inputs from sliders
 
 /******************************************************************************
- * Loan Installment Calculation (Annuity Formula)
+ * HELPER: PMT Calculation (Google Sheets style)
+ * monthlyInstallment = PMT((k/m), (m*n), -s)
  *****************************************************************************/
-function calculateLoanInstallment(totalInvestment) {
-  // Convert annual interest to monthly
-  const r = (loanInterestRate / 100) / installmentsPerYear;
-  const n = loanTerms * installmentsPerYear;
-  // Annuity formula
-  const installment = totalInvestment * (r * Math.pow(1 + r, n)) 
-                      / (Math.pow(1 + r, n) - 1);
-  return installment;
+function computePMT(ratePerInstallment, totalInstallments, presentValue) {
+  // If rate = 0, then PMT = PV / totalInstallments
+  if (ratePerInstallment === 0) {
+    return presentValue / totalInstallments;
+  }
+  return (
+    presentValue *
+    (ratePerInstallment * Math.pow(1 + ratePerInstallment, totalInstallments)) /
+    (Math.pow(1 + ratePerInstallment, totalInstallments) - 1)
+  );
 }
 
 /******************************************************************************
- * Main Calculation Function
+ * MAIN CALCULATION
  *****************************************************************************/
 function calculateOutputs() {
-  // Retrieve input values
-  const estimatedPassengers = parseFloat(document.getElementById("estimatedPassengers").value);
-  const weightedAvgPrice = parseFloat(document.getElementById("weightedAvgPrice").value);
-  const souvenirPrice = parseFloat(document.getElementById("souvenirPrice").value);
-  const totalInvestment = parseFloat(document.getElementById("totalInvestment").value);
+  // 1. Grab input values
+  const b = parseFloat(document.getElementById("occupancyRate").value) / 100;  // Occupancy rate
+  const e = parseFloat(document.getElementById("tourFee").value);             // Tour fee
+  const f = parseFloat(document.getElementById("souvenirFee").value);         // Souvenir fee
 
-  // Monthly revenues
-  const guidedToursRevenue = estimatedPassengers * weightedAvgPrice;
-  const merchSalesRevenue = estimatedPassengers * souvenirPrice;
-  const totalRevenue = guidedToursRevenue + merchSalesRevenue;
+  const k = parseFloat(document.getElementById("interestRate").value) / 100;  // Annual interest rate
+  const m = parseFloat(document.getElementById("installmentsPerYear").value); // Installments per year
+  const n = parseFloat(document.getElementById("loanYears").value);           // Number of years
 
-  // Operating cost
-  const operatingCost = totalRevenue * operatingCostRatio;
+  // 2. Derived values
+  // c = a*b (estimated passengers per month)
+  const c = a * b;
 
-  // Monthly loan installment
-  const loanInstallment = calculateLoanInstallment(totalInvestment);
+  // total investment = s = 64540.90 + (c*11/2)
+  // c*11/2 = c*5.5
+  const s = 64540.90 + (c * 5.5);
 
-  // Base-case monthly net profit
-  const netProfitMonthly = totalRevenue - operatingCost - loanInstallment;
-  const netProfitAnnual = netProfitMonthly * 12;
+  // total revenue (monthly) = d = c*(e + f)
+  const d = c * (e + f);
 
-  // ROI (annual)
-  const ROI = (netProfitAnnual / totalInvestment) * 100;
+  // monthly installment = j = PMT((k/m), m*n, -s)
+  // presentValue = -s => we pass s as positive to our function and then interpret sign
+  const ratePerInstallment = k / m;
+  const totalInstallments = m * n;
+  const j = computePMT(ratePerInstallment, totalInstallments, s);
 
-  // Payback Period (years) - if net profit <= 0, mark as ∞
-  let paybackPeriod = netProfitAnnual > 0 ? (totalInvestment / netProfitAnnual) : Infinity;
-  // If payback is extremely large (e.g. > 50 years), treat as ∞
-  if (paybackPeriod > 50) paybackPeriod = Infinity;
+  // total expenses (operational cost) = q
+  // q = 10746.25 + (600 + c*5.5) + j + (0.0758*d)
+  const variablePart = 600 + (c * 5.5);
+  const q = 10746.25 + variablePart + j + (0.0758 * d);
+
+  // net profit (monthly) = t = d - q
+  const t = d - q;
+
+  // ROI (u) = (t / s)*100
+  const u = (t / s) * 100;
+
+  // payback period (w) = s / t (in years)
+  let w = t > 0 ? s / t : Infinity;
+  // If payback is extremely large, treat as Infinity
+  if (w > 100) w = Infinity;
 
   /******************************************************************************
-   * Alternative Scenarios
-   * Best-case: +20% revenue, -10% operating cost
-   * Worst-case: -20% revenue, +10% operating cost
+   * ALTERNATIVE SCENARIOS
+   * Best-case: +20% to revenue, -10% to total expenses
+   * Worst-case: -20% to revenue, +10% to total expenses
    *****************************************************************************/
+  // Base-case (just our d, q, t, s)
+  const baseD = d;
+  const baseQ = q;
+  const baseT = t;
+  const baseROI = u;
+  let baseW = w;
+
   // Best-case
-  const bestRevenue = totalRevenue * 1.20;
-  const bestOperatingCost = (totalRevenue * operatingCostRatio) * 0.90;
-  const bestNetProfitMonthly = bestRevenue - bestOperatingCost - loanInstallment;
-  const bestNetProfitAnnual = bestNetProfitMonthly * 12;
-  let bestROI = (bestNetProfitAnnual / totalInvestment) * 100;
-  let bestPayback = bestNetProfitAnnual > 0 ? (totalInvestment / bestNetProfitAnnual) : Infinity;
-  if (bestPayback > 50) bestPayback = Infinity;
+  const bestD = d * 1.2;
+  const bestQ = q * 0.9;
+  const bestT = bestD - bestQ;
+  const bestROI = (bestT / s) * 100;
+  let bestW = bestT > 0 ? s / bestT : Infinity;
+  if (bestW > 100) bestW = Infinity;
 
   // Worst-case
-  const worstRevenue = totalRevenue * 0.80;
-  const worstOperatingCost = (totalRevenue * operatingCostRatio) * 1.10;
-  const worstNetProfitMonthly = worstRevenue - worstOperatingCost - loanInstallment;
-  const worstNetProfitAnnual = worstNetProfitMonthly * 12;
-  let worstROI = (worstNetProfitAnnual / totalInvestment) * 100;
-  let worstPayback = worstNetProfitAnnual > 0 ? (totalInvestment / worstNetProfitAnnual) : Infinity;
-  if (worstPayback > 50) worstPayback = Infinity;
+  const worstD = d * 0.8;
+  const worstQ = q * 1.1;
+  const worstT = worstD - worstQ;
+  const worstROI = (worstT / s) * 100;
+  let worstW = worstT > 0 ? s / worstT : Infinity;
+  if (worstW > 100) worstW = Infinity;
 
   /******************************************************************************
-   * Update DOM
+   * UPDATE DOM
    *****************************************************************************/
-  // Main outputs (Base-case)
-  document.getElementById("totalRevenueOutput").innerText = totalRevenue.toFixed(2);
-  document.getElementById("netProfitOutput").innerText = netProfitAnnual.toFixed(2);
-  document.getElementById("roiOutput").innerText = ROI.toFixed(2) + "%";
-  document.getElementById("paybackOutput").innerText = 
-    (paybackPeriod === Infinity) ? "∞" : paybackPeriod.toFixed(2) + " years";
+  // MID SECTION: main outputs
+  document.getElementById("totalRevenueOutput").innerText = d.toFixed(2);
+  document.getElementById("netProfitOutput").innerText = t.toFixed(2);
+  document.getElementById("roiOutput").innerText = u.toFixed(2) + "%";
+  document.getElementById("paybackOutput").innerText =
+    (w === Infinity) ? "∞" : w.toFixed(2);
 
-  // Alternative Scenarios
-  // Base-case row
-  document.getElementById("baseRevenue").innerText = totalRevenue.toFixed(2);
-  document.getElementById("baseNetProfit").innerText = netProfitAnnual.toFixed(2);
-  document.getElementById("baseROI").innerText = ROI.toFixed(2) + "%";
-  document.getElementById("basePayback").innerText = 
-    (paybackPeriod === Infinity) ? "∞" : paybackPeriod.toFixed(2) + " years";
+  // BOTTOM SECTION: Alternative Scenarios
+  // Base-case
+  document.getElementById("baseRevenue").innerText = baseD.toFixed(2);
+  document.getElementById("baseNetProfit").innerText = baseT.toFixed(2);
+  document.getElementById("baseROI").innerText = baseROI.toFixed(2) + "%";
+  document.getElementById("basePayback").innerText =
+    (baseW === Infinity) ? "∞" : baseW.toFixed(2);
 
-  // Best-case row
-  document.getElementById("bestRevenue").innerText = bestRevenue.toFixed(2);
-  document.getElementById("bestNetProfit").innerText = bestNetProfitAnnual.toFixed(2);
+  // Best-case
+  document.getElementById("bestRevenue").innerText = bestD.toFixed(2);
+  document.getElementById("bestNetProfit").innerText = bestT.toFixed(2);
   document.getElementById("bestROI").innerText = bestROI.toFixed(2) + "%";
-  document.getElementById("bestPayback").innerText = 
-    (bestPayback === Infinity) ? "∞" : bestPayback.toFixed(2) + " years";
+  document.getElementById("bestPayback").innerText =
+    (bestW === Infinity) ? "∞" : bestW.toFixed(2);
 
-  // Worst-case row
-  document.getElementById("worstRevenue").innerText = worstRevenue.toFixed(2);
-  document.getElementById("worstNetProfit").innerText = worstNetProfitAnnual.toFixed(2);
+  // Worst-case
+  document.getElementById("worstRevenue").innerText = worstD.toFixed(2);
+  document.getElementById("worstNetProfit").innerText = worstT.toFixed(2);
   document.getElementById("worstROI").innerText = worstROI.toFixed(2) + "%";
-  document.getElementById("worstPayback").innerText = 
-    (worstPayback === Infinity) ? "∞" : worstPayback.toFixed(2) + " years";
+  document.getElementById("worstPayback").innerText =
+    (worstW === Infinity) ? "∞" : worstW.toFixed(2);
 }
 
 /******************************************************************************
- * Slider Display Helper
+ * SLIDER DISPLAY HELPERS
  *****************************************************************************/
-function updateSliderDisplay(sliderId, displayId) {
+function updateSliderDisplay(sliderId, displayId, isInteger = false) {
   const slider = document.getElementById(sliderId);
   const display = document.getElementById(displayId);
-  display.innerText = parseFloat(slider.value).toFixed(2);
+  const val = parseFloat(slider.value);
+  display.innerText = isInteger ? val.toFixed(0) : val.toFixed(2);
 }
 
 /******************************************************************************
- * On DOMContentLoaded
+ * ON DOMContentLoaded
  *****************************************************************************/
-document.addEventListener("DOMContentLoaded", function() {
-  // Attach event listeners to tuner inputs
+document.addEventListener("DOMContentLoaded", () => {
   const tuners = document.querySelectorAll(".tuner");
+
+  // On input change, update display and recalc
   tuners.forEach(input => {
     input.addEventListener("input", () => {
-      // Update the slider display if it’s a range
       switch (input.id) {
-        case "estimatedPassengers":
-          document.getElementById("passengerVal").innerText = input.value;
+        case "occupancyRate":
+          updateSliderDisplay("occupancyRate", "occupancyRateVal", true);
           break;
-        case "weightedAvgPrice":
-          updateSliderDisplay("weightedAvgPrice", "weightedPriceVal");
+        case "tourFee":
+          updateSliderDisplay("tourFee", "tourFeeVal");
           break;
-        case "souvenirPrice":
-          updateSliderDisplay("souvenirPrice", "souvenirVal");
+        case "souvenirFee":
+          updateSliderDisplay("souvenirFee", "souvenirFeeVal");
+          break;
+        case "interestRate":
+          updateSliderDisplay("interestRate", "interestRateVal");
+          break;
+        case "installmentsPerYear":
+          updateSliderDisplay("installmentsPerYear", "installmentsVal", true);
+          break;
+        case "loanYears":
+          updateSliderDisplay("loanYears", "loanYearsVal", true);
           break;
         default:
-          // totalInvestment is a numeric input, no separate display
           break;
       }
       calculateOutputs();
     });
   });
 
-  // Initialize slider display text
-  document.getElementById("passengerVal").innerText = 
-    document.getElementById("estimatedPassengers").value;
-  updateSliderDisplay("weightedAvgPrice", "weightedPriceVal");
-  updateSliderDisplay("souvenirPrice", "souvenirVal");
+  // Initialize slider displays
+  updateSliderDisplay("occupancyRate", "occupancyRateVal", true);
+  updateSliderDisplay("tourFee", "tourFeeVal");
+  updateSliderDisplay("souvenirFee", "souvenirFeeVal");
+  updateSliderDisplay("interestRate", "interestRateVal");
+  updateSliderDisplay("installmentsPerYear", "installmentsVal", true);
+  updateSliderDisplay("loanYears", "loanYearsVal", true);
 
   // Initial calculation
   calculateOutputs();
