@@ -4,8 +4,10 @@
 const a = 288;  // Maximum passengers per month
 
 // Conversion factor: 1 USD = 1.75 ANG
-// Global Inputs (expressed in ANG)
-  
+// Global Inputs (expressed in ANG): 
+// Default tour fee in ANG: 92.50 USD * 1.75 = 161.88 ANG
+// Default souvenir fee in ANG: 10 USD * 1.75 = 17.50 ANG
+
 /******************************************************************************
  * HELPER: PMT Calculation (Google Sheets style)
  * PMT(rate, nper, pv)
@@ -36,7 +38,7 @@ function calculateOutputs() {
   // Derived Values:
   // Estimated passengers per month: c = a * b
   const c = a * b;
-  // Total investment: s = 64540.90 + (c * 11/2)
+  // Total investment: s = 64540.90 + (c * 11/2) = 64540.90 + (c * 5.5)
   const s = 64540.90 + (c * 5.5);
   // Total revenue (monthly) in ANG: d = c * (e + f)
   const d = c * (e + f);
@@ -57,9 +59,9 @@ function calculateOutputs() {
   // ROI (%) = (t / s) * 100
   const u = (t / s) * 100;
 
-  // Payback period (years) = s / t (if t > 0; otherwise Infinity)
+  // Payback period (months) = s / t (if t > 0; otherwise Infinity)
   let w = t > 0 ? s / t : Infinity;
-  if (w > 100) w = Infinity;
+  if (w > 1000) w = Infinity;  // Bound for extreme values
 
   /******************************************************************************
    * ALTERNATIVE SCENARIOS
@@ -68,8 +70,6 @@ function calculateOutputs() {
    *****************************************************************************/
   // Base-case values:
   const baseD = d;
-  const baseQ = q;
-  const baseT = t;
   const baseROI = u;
   let baseW = w;
 
@@ -79,7 +79,7 @@ function calculateOutputs() {
   const bestT = bestD - bestQ;
   const bestROI = (bestT / s) * 100;
   let bestW = bestT > 0 ? s / bestT : Infinity;
-  if (bestW > 100) bestW = Infinity;
+  if (bestW > 1000) bestW = Infinity;
 
   // Worst-case scenario:
   const worstD = d * 0.8;
@@ -87,7 +87,11 @@ function calculateOutputs() {
   const worstT = worstD - worstQ;
   const worstROI = (worstT / s) * 100;
   let worstW = worstT > 0 ? s / worstT : Infinity;
-  if (worstW > 100) worstW = Infinity;
+  if (worstW > 1000) worstW = Infinity;
+
+  // Calculate scenario percentage differences (relative to base-case d)
+  const bestPercent = ((bestD - d) / d) * 100;    // should be +20%
+  const worstPercent = ((worstD - d) / d) * 100;    // should be -20%
 
   /******************************************************************************
    * UPDATE DOM OUTPUTS
@@ -99,19 +103,23 @@ function calculateOutputs() {
   document.getElementById("paybackOutput").innerText = (w === Infinity) ? "∞" : w.toFixed(2);
 
   // BOTTOM SECTION: Alternative Scenarios
-  // Base-case
+  // Update scenario labels with computed percentages:
+  document.getElementById("baseScenario").innerText = "Base-case (0%)";
+  document.getElementById("bestScenario").innerText = "Best-case (" + (bestPercent > 0 ? "+" : "") + bestPercent.toFixed(0) + "%)";
+  document.getElementById("worstScenario").innerText = "Worst-case (" + (worstPercent > 0 ? "+" : "") + worstPercent.toFixed(0) + "%)";
+
+  // Base-case row
   document.getElementById("baseRevenue").innerText = baseD.toFixed(2);
-  document.getElementById("baseNetProfit").innerText = baseT.toFixed(2);
   document.getElementById("baseROI").innerText = baseROI.toFixed(2) + "%";
   document.getElementById("basePayback").innerText = (baseW === Infinity) ? "∞" : baseW.toFixed(2);
-  // Best-case
+
+  // Best-case row
   document.getElementById("bestRevenue").innerText = bestD.toFixed(2);
-  document.getElementById("bestNetProfit").innerText = bestT.toFixed(2);
   document.getElementById("bestROI").innerText = bestROI.toFixed(2) + "%";
   document.getElementById("bestPayback").innerText = (bestW === Infinity) ? "∞" : bestW.toFixed(2);
-  // Worst-case
+
+  // Worst-case row
   document.getElementById("worstRevenue").innerText = worstD.toFixed(2);
-  document.getElementById("worstNetProfit").innerText = worstT.toFixed(2);
   document.getElementById("worstROI").innerText = worstROI.toFixed(2) + "%";
   document.getElementById("worstPayback").innerText = (worstW === Infinity) ? "∞" : worstW.toFixed(2);
 }
