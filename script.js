@@ -1,47 +1,48 @@
 /******************************************************************************
  * CONSTANTS & DEFAULTS
  *****************************************************************************/
-const a = 288;  // Maximum passengers per month
+const a = 288; // Max passengers per month
 
 /******************************************************************************
  * MAIN CALCULATION FUNCTION
  *****************************************************************************/
 function calculateOutputs() {
   // Retrieve Global input values:
-  const b = parseFloat(document.getElementById("occupancyRate").value) / 100; // Occupancy rate as a decimal
-  const e = parseFloat(document.getElementById("tourFee").value);            // Climbing fee (ANG)
-  const f = parseFloat(document.getElementById("souvenirFee").value);          // Souvenir fee (ANG)
+  const y = parseFloat(document.getElementById("vehicles").value);             // Number of vehicles (y)
+  const b = parseFloat(document.getElementById("occupancyRate").value);          // Occupancy rate (b) (already as a decimal)
+  const e = parseFloat(document.getElementById("tourFee").value);                // Climbing fee (e) in ANG
+  const f = parseFloat(document.getElementById("souvenirFee").value);              // Souvenir fee (f) in ANG
 
-  // Derived values:
-  const c = a * b;                      // Estimated passengers per month
-  const d = c * (e + f);                // Total revenue (ANG/month)
-  const s = 64540.90 + (c * 5.5);         // Total investment (ANG)
+  // Derived Values:
+  const c = a * b * y;                  // Estimated passengers per month (c = a*b*y)
+  const d = c * (e + f);                // Total revenue (d = c*(e+f)) in ANG/month
+  const s = 3000 + y * 62332.90;         // Total investment (s = 3000 + y*62332.90) in ANG
 
-  // Monthly loan installment is removed (set to 0)
-  // Total expenses (q) = 10746.25 + (600 + (c * 5.5)) + 0 + (0.0758 * d)
-  const q = 10746.25 + (600 + (c * 5.5)) + (0.0758 * d);
+  // Total operational costs (q)
+  // q = y*10986.33 + 0.0758*d + 1152.02
+  const q = y * 10986.33 + 0.0758 * d + 1152.02;
 
-  // Net profit (ANG/month)
+  // Net Profit (t)
   const t = d - q;
 
-  // ROI (%) = (t / s) * 100
+  // ROI (u) = (t/s)*100
   const u = (t / s) * 100;
 
-  // Payback period (months) = s / t (if t > 0; otherwise Infinity)
+  // Payback period (w) = s/t (in months)
   let w = t > 0 ? s / t : Infinity;
-  if (w > 1000) w = Infinity;  // Bound for extreme values
+  if (w > 1000) w = Infinity;
 
   /******************************************************************************
    * ALTERNATIVE SCENARIOS
-   * Best-case: Revenue increased by 20% and expenses decreased by 10%
-   * Worst-case: Revenue decreased by 20% and expenses increased by 10%
+   * Best-case: d increased by 20% and q decreased by 10%
+   * Worst-case: d decreased by 20% and q increased by 10%
    *****************************************************************************/
   // Base-case values:
   const baseD = d;
   const baseROI = u;
   let baseW = w;
 
-  // Best-case:
+  // Best-case scenario:
   const bestD = d * 1.2;
   const bestQ = q * 0.9;
   const bestT = bestD - bestQ;
@@ -49,7 +50,7 @@ function calculateOutputs() {
   let bestW = bestT > 0 ? s / bestT : Infinity;
   if (bestW > 1000) bestW = Infinity;
 
-  // Worst-case:
+  // Worst-case scenario:
   const worstD = d * 0.8;
   const worstQ = q * 1.1;
   const worstT = worstD - worstQ;
@@ -57,9 +58,9 @@ function calculateOutputs() {
   let worstW = worstT > 0 ? s / worstT : Infinity;
   if (worstW > 1000) worstW = Infinity;
 
-  // Scenario percentage differences:
-  const bestPercent = ((bestD - d) / d) * 100;    // should be +20%
-  const worstPercent = ((worstD - d) / d) * 100;    // should be -20%
+  // Calculate scenario percentage differences relative to base-case:
+  const bestPercent = ((bestD - d) / d) * 100;    // should be approximately +20%
+  const worstPercent = ((worstD - d) / d) * 100;    // should be approximately -20%
 
   /******************************************************************************
    * UPDATE DOM OUTPUTS
@@ -70,19 +71,22 @@ function calculateOutputs() {
   document.getElementById("roiOutput").innerText = u.toFixed(2) + "%";
   document.getElementById("paybackOutput").innerText = (w === Infinity) ? "∞" : w.toFixed(2);
 
-  // BOTTOM SECTION: Alternative Scenarios
+  // BOTTOM SECTION: Alternative Scenarios labels
   document.getElementById("baseScenario").innerText = "Base-case (0%)";
-  document.getElementById("bestScenario").innerText = "Best-case (" + (bestPercent > 0 ? "+" : "") + bestPercent.toFixed(0) + "%)";
-  document.getElementById("worstScenario").innerText = "Worst-case (" + (worstPercent > 0 ? "+" : "") + worstPercent.toFixed(0) + "%)";
+  document.getElementById("bestScenario").innerText = "Best-case (" + (bestPercent >= 0 ? "+" : "") + bestPercent.toFixed(0) + "%)";
+  document.getElementById("worstScenario").innerText = "Worst-case (" + (worstPercent >= 0 ? "+" : "") + worstPercent.toFixed(0) + "%)";
 
+  // Base-case row
   document.getElementById("baseRevenue").innerText = baseD.toFixed(2);
   document.getElementById("baseROI").innerText = baseROI.toFixed(2) + "%";
   document.getElementById("basePayback").innerText = (baseW === Infinity) ? "∞" : baseW.toFixed(2);
 
+  // Best-case row
   document.getElementById("bestRevenue").innerText = bestD.toFixed(2);
   document.getElementById("bestROI").innerText = bestROI.toFixed(2) + "%";
   document.getElementById("bestPayback").innerText = (bestW === Infinity) ? "∞" : bestW.toFixed(2);
 
+  // Worst-case row
   document.getElementById("worstRevenue").innerText = worstD.toFixed(2);
   document.getElementById("worstROI").innerText = worstROI.toFixed(2) + "%";
   document.getElementById("worstPayback").innerText = (worstW === Infinity) ? "∞" : worstW.toFixed(2);
@@ -106,8 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
   tuners.forEach(input => {
     input.addEventListener("input", () => {
       switch (input.id) {
+        case "vehicles":
+          updateSliderDisplay("vehicles", "vehiclesVal", true);
+          break;
         case "occupancyRate":
-          updateSliderDisplay("occupancyRate", "occupancyRateVal", true);
+          updateSliderDisplay("occupancyRate", "occupancyRateVal");
           break;
         case "tourFee":
           updateSliderDisplay("tourFee", "tourFeeVal");
@@ -122,9 +129,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
   
-  updateSliderDisplay("occupancyRate", "occupancyRateVal", true);
+  // Initialize slider displays
+  updateSliderDisplay("vehicles", "vehiclesVal", true);
+  updateSliderDisplay("occupancyRate", "occupancyRateVal");
   updateSliderDisplay("tourFee", "tourFeeVal");
   updateSliderDisplay("souvenirFee", "souvenirFeeVal");
   
+  // Perform initial calculation
   calculateOutputs();
 });

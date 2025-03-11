@@ -11,28 +11,35 @@
     <h1>ROCK BIZ MODEL</h1>
   </header>
 
-  <!-- TOP SECTION: Global Inputs Only -->
+  <!-- TOP SECTION: 2x2 arrangement for Global Inputs -->
   <section id="top-section">
-    <div class="column" id="global-inputs">
-      <h2>GLOBAL INPUTS</h2>
-      <!-- Occupancy Rate (b) -->
-      <div class="input-group">
-        <label for="occupancyRate">
-          Occupancy Rate (%):
-          <span id="occupancyRateVal">50</span>
+    <div class="grid-container">
+      <!-- Vehicle slider -->
+      <div class="grid-item">
+        <label for="vehicles">
+          Vehicles:
+          <span id="vehiclesVal">1</span>
         </label>
-        <input type="range" id="occupancyRate" class="tuner" value="50" min="0" max="100" step="1" />
+        <input type="range" id="vehicles" class="tuner" value="1" min="1" max="3" step="1" />
       </div>
-      <!-- Average Tour Fee (e) in ANG -->
-      <div class="input-group">
+      <!-- Occupancy Rate slider -->
+      <div class="grid-item">
+        <label for="occupancyRate">
+          Occupancy Rate:
+          <span id="occupancyRateVal">0.50</span>
+        </label>
+        <input type="range" id="occupancyRate" class="tuner" value="0.50" min="0" max="1" step="0.01" />
+      </div>
+      <!-- Climbing Fee slider -->
+      <div class="grid-item">
         <label for="tourFee">
           Climbing Fee (ANG):
           <span id="tourFeeVal">161.88</span>
         </label>
         <input type="range" id="tourFee" class="tuner" value="161.88" min="0" max="400" step="0.1" />
       </div>
-      <!-- Souvenir Fee (f) in ANG -->
-      <div class="input-group">
+      <!-- Souvenir Fee slider -->
+      <div class="grid-item">
         <label for="souvenirFee">
           Souvenir Fee (ANG):
           <span id="souvenirFeeVal">17.50</span>
